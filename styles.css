@@ -1,0 +1,23 @@
+
+    body {
+      font-family: Arial, sans-serif;
+      width: 300px;
+      padding: 10px;
+    }
+    .product-list {
+      margin-top: 10px;
+    }
+    .product-item {
+      margin-bottom: 10px;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .product-title {
+      font-weight: bold;
+    }
+    .product-price {
+      color: green;
+    }
+
+  
