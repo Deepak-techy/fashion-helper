@@ -1,4 +1,4 @@
-function scanPage() {
+function scrapeProducts() {
   const products = [];
 
   // Scrape the product title
@@ -15,8 +15,35 @@ function scanPage() {
   // Push product details to the array
   products.push({ title, price, imageUrl });
 
-  return products; // Return the products to the popup
+  return products;
 }
 
-// Send the scraped product details to the background script
-chrome.runtime.sendMessage({ action: "sendProducts", data: scanPage() });
+function sendScrapedData() {
+  const data = scrapeProducts();
+  chrome.runtime.sendMessage({ action: "sendProducts", data });
+}
+
+// Wait for the page to fully load before scraping
+window.addEventListener("load", () => {
+  sendScrapedData();
+
+  // Observe DOM changes to handle dynamically loaded content
+  const observer = new MutationObserver(() => {
+    sendScrapedData();
+  });
+
+  // Observe changes in the entire document
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  // Disconnect the observer after a delay (optional, to limit resource usage)
+  setTimeout(() => {
+    observer.disconnect();
+  }, 10000); // Stops observing after 10 seconds
+});
+
+// Listen for requests to rescrape
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.action === "rescrape") {
+    sendScrapedData();
+  }
+});

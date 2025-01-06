@@ -11,8 +11,8 @@
       text-align: center;
     }
     .product-card img {
-      max-width: 100%;
-      height: auto;
+      height: 200px;
+      width: 200px;
       margin-bottom: 10px;
     }
     .product-card h3 {
