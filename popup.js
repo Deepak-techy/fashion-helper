@@ -1,46 +1,42 @@
-document.getElementById("scan-btn").addEventListener("click", function () {
-  // Inject the content script to scrape the products
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    chrome.scripting.executeScript(
-      {
-        target: { tabId: tabs[0].id },
-        files: ["content.js"]
-      },
-      function (injectionResults) {
-        // Once the content is scraped, show it in the popup
-        if (injectionResults && injectionResults[0].result) {
-          displayProducts(injectionResults[0].result);
-        }
-      }
-    );
-  });
+// Listen for messages from the content script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "sendProducts") {
+    displayProducts(message.data);
+  }
 });
 
-// Function to display products in the popup
+// Display the products in the popup
 function displayProducts(products) {
-  const productListDiv = document.getElementById("product-list");
-  productListDiv.innerHTML = ''; // Clear any previous results
+  const productContainer = document.getElementById("product-list");
+  productContainer.innerHTML = ""; // Clear any existing content
 
-  if (products.length === 0) {
-    productListDiv.innerHTML = "<p>No products found.</p>";
-    return;
-  }
+  products.forEach((product) => {
+    // Create a product card
+    const productCard = document.createElement("div");
+    productCard.className = "product-card";
 
-  // Loop through the products and display them
-  products.forEach(product => {
-    const productItem = document.createElement("div");
-    productItem.classList.add("product-item");
+    // Add the product image
+    const productImage = document.createElement("img");
+    productImage.src = product.imageUrl;
+    productImage.alt = product.title;
+    productCard.appendChild(productImage);
 
-    const productTitle = document.createElement("div");
-    productTitle.classList.add("product-title");
-    productTitle.innerText = product.title;
+    // Add the product title
+    const productTitle = document.createElement("h3");
+    productTitle.textContent = product.title;
+    productCard.appendChild(productTitle);
 
-    const productPrice = document.createElement("div");
-    productPrice.classList.add("product-price");
-    productPrice.innerText = product.price;
+    // Add the product price
+    const productPrice = document.createElement("p");
+    productPrice.textContent = `Price: ${product.price}`;
+    productCard.appendChild(productPrice);
 
-    productItem.appendChild(productTitle);
-    productItem.appendChild(productPrice);
-    productListDiv.appendChild(productItem);
+    // Append the card to the container
+    productContainer.appendChild(productCard);
   });
 }
+
+// Request the content script to send product data when the popup opens
+chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  chrome.tabs.sendMessage(tabs[0].id, { action: "getProducts" });
+});

@@ -1,23 +1,25 @@
 
     body {
       font-family: Arial, sans-serif;
-      width: 300px;
-      padding: 10px;
+      margin: 10px;
     }
-    .product-list {
-      margin-top: 10px;
-    }
-    .product-item {
-      margin-bottom: 10px;
-      padding: 5px;
+    .product-card {
       border: 1px solid #ddd;
-      border-radius: 4px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      padding: 10px;
+      text-align: center;
     }
-    .product-title {
-      font-weight: bold;
+    .product-card img {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 10px;
     }
-    .product-price {
-      color: green;
+    .product-card h3 {
+      font-size: 18px;
+      margin: 5px 0;
     }
-
-  
+    .product-card p {
+      font-size: 16px;
+      color: #333;
+    }
