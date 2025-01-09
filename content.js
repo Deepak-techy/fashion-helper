@@ -1,21 +1,86 @@
+function scrapeAmazonProductPage() {
+  const product = {};
+
+  // Scrape the title
+  product.title = document.querySelector("#productTitle")?.innerText.trim() || "Unknown Product";
+
+  // Scrape the price
+  const priceWhole = document.querySelector(".a-price-whole")?.innerText || null;
+  const priceFraction = document.querySelector(".a-price-fraction")?.innerText || null;
+  product.price = priceWhole ? `${priceWhole}.${priceFraction || "00"}` : "N/A";
+
+  // Scrape the image URL
+  product.image =
+      document.querySelector("#imgTagWrapperId img")?.src ||
+      document.querySelector(".image-item img")?.src ||
+      "No Image Available";
+
+  console.log(product);
+  return product;
+}
+
+function scrapeFlipkartProductPage() {
+  const product = {};
+
+  // Scrape the title
+  product.title = document.querySelector(".VU-ZEz")?.innerText.trim() || "Unknown Product";
+
+  // Scrape the price
+  product.price = document.querySelector(".Nx9bqj")?.innerText.trim() || "N/A";
+
+  // Scrape the image URL
+  product.image =
+      document.querySelector("._53J4C-")?.src ||
+      "No Image Available";
+
+  console.log(product);
+  return product;
+}
+
+function scrapeMyntraProductPage() {
+  const product = {};
+
+  // Scrape the title
+  title1 = document.querySelector(".pdp-title")?.innerText.trim() || "Unknown Product";
+  title2 = document.querySelector(".pdp-name")?.innerText.trim() || "Unknown Product";
+  product.title = `${title1} | ${title2}`;
+
+  // Scrape the price
+  product.price = document.querySelector(".pdp-price")?.innerText.trim() || "N/A";
+
+  // Scrape the image URL
+  const divElement = document.querySelector(".image-grid-image");
+  const styleAttribute = divElement?.getAttribute("style");
+
+  if (styleAttribute) {
+      const urlMatch = styleAttribute.match(/url\("(.+?)"\)/);
+      const imageUrl = urlMatch ? urlMatch[1] : null;
+      if (imageUrl) {
+          console.log(imageUrl);
+          product.image = imageUrl;
+      } else {
+          console.log("No image URL found");
+      }
+  } else {
+      console.log("No style attribute found");
+  }
+
+  console.log(product);
+  return product;
+}
+
 function scrapeProducts() {
-  const products = [];
+  const url = window.location.href;
 
-  // Scrape the product title
-  const title = document.querySelector("#productTitle")?.innerText.trim() || "Unknown Product";
+  if (url.includes("amazon.in") && url.includes("/dp/")) {
+      return [scrapeAmazonProductPage()];
+  } else if (url.includes("flipkart.com") && url.includes("/p/")) {
+      return [scrapeFlipkartProductPage()];
+  } else if (url.includes("myntra.com") || url.includes("/p/")) {
+    return [scrapeMyntraProductPage()];
+  }
 
-  // Scrape the product price (handles different formats)
-  const priceWhole = document.querySelector(".a-price .a-price-whole")?.innerText.trim() || null;
-  const priceFraction = document.querySelector(".a-price .a-price-fraction")?.innerText.trim() || "00";
-  const price = priceWhole ? `${priceWhole}.${priceFraction}` : "N/A";
-
-  // Scrape the product image
-  const imageUrl = document.querySelector("#imgTagWrapperId img")?.src || "Image not available";
-
-  // Push product details to the array
-  products.push({ title, price, imageUrl });
-
-  return products;
+  return [];
 }
 
 function sendScrapedData() {
@@ -23,23 +88,22 @@ function sendScrapedData() {
   chrome.runtime.sendMessage({ action: "sendProducts", data });
 }
 
-// Wait for the page to fully load before scraping
+// Scrape data once the page loads
 window.addEventListener("load", () => {
   sendScrapedData();
 
-  // Observe DOM changes to handle dynamically loaded content
+  // Handle dynamic content loading
   const observer = new MutationObserver(() => {
-    sendScrapedData();
+      sendScrapedData();
   });
 
-  // Observe changes in the entire document
   observer.observe(document.body, { childList: true, subtree: true });
 
-  // Disconnect the observer after a delay (optional, to limit resource usage)
   setTimeout(() => {
-    observer.disconnect();
-  }, 10000); // Stops observing after 10 seconds
+      observer.disconnect();
+  }, 10000);
 });
+
 
 // Listen for requests to rescrape
 chrome.runtime.onMessage.addListener((message) => {
